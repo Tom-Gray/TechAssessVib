@@ -22,6 +22,9 @@ Vagrant.configure("2") do |config|
     vb.gui = "true"
   end
 
+  #first shell script installs choco pckage manager and nuget package provider
+  config.vm.provision "shell", path: "./scripts/bootstrap.ps1"
+
 
 
 
