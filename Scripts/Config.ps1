@@ -7,6 +7,7 @@ configuration VibServer {
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -Modulename xWebadministration
     Import-DscResource -Modulename cChoco
+    Import-DscResource -ModuleName SqlServerDsc
 
 
 
@@ -55,6 +56,19 @@ configuration VibServer {
             DependsOn   = "[cChocoInstaller]installChoco"
             Version     = "2.1.6"
         }
+
+
+        #create a database called 'Data' that our app will talk to.
+        SqlDatabase CreateDatabase 
+        {
+            Servername      = 'localhost'
+            InstanceName    = 'MSSQLSERVER'
+            Name            = 'Data'
+            Ensure          = 'Present'
+            DependsOn       = '[cChocoPackageInstaller]SQLEXPRESS'
+        }
+
+
 
 
 
