@@ -7,7 +7,7 @@ The brief states I should "Choose the platforms, frameworks and languages you're
 - IIS and ASP.NET core
 - MSSQL Express
 - Vagrant - the Windows box will be about 5gb. Sorry! Larry Smith has up-to-date Windows boxes https://github.com/mrlesmithjr/packer-templates
-- Basic ASP.NET core app to return data from the database to the user.
+- Basic ASP.NET core app to return data from the database to the user. (first time writing asp.net core so it's going to be... simple.)
 
 I have been playing with Puppet and Ansible the last couple of weeks but I'm not confident I cant use them as effectively as Powershell DSC, so we'll roll with DSC. 
 
