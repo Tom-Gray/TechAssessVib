@@ -31,3 +31,4 @@ if (!(Get-PackageProvider -name nuget)) {
 
 #DSC will require these modules:
 install-module xWebAdministration -force -RequiredVersion '2.2.0.0'    
+install-Module cChoco -force

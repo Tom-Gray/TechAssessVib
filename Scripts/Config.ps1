@@ -6,6 +6,7 @@ configuration VibServer {
     )
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -Modulename xWebadministration
+    Import-DscResource -Modulename cChoco
 
 
 
@@ -31,6 +32,28 @@ configuration VibServer {
             Ensure          = "Absent"
             Name            = "Default Web Site"
             State           = "Stopped"
+        }
+
+
+        cChocoInstaller installChoco
+        {
+            InstallDir = "$env:programdata\choco"
+        }
+
+        #install data tier. This will take aw while.
+        cChocoPackageInstaller SQLEXPRESS 
+        {
+            Name        = "7zip"
+            DependsOn   = "[cChocoInstaller]installChoco"
+            Version     = "14.1801.3958.1"
+        }
+
+        #the dotnet windowshosting package is required to run ASP.NET Core apps on IIS.
+        cChocoPackageInstaller dotnet-IIS-Runtime 
+        {
+            Name        = "dotnetcore-windowshosting"
+            DependsOn   = "[cChocoInstaller]installChoco"
+            Version     = "2.1.6"
         }
 
 
