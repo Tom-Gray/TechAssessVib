@@ -1,21 +1,4 @@
 
-#install chocolately package manager
-if (!(get-command choco)) {
-    
-try {
-    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-}
-
-catch {
-    Write-Error -Message $_
-    throw 10
-}
-
-
-
-}
-
-
 #install nuget package provider (for Powershell module installation)
 if (!(Get-PackageProvider -name nuget)) {
     try {
