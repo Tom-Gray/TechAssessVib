@@ -41,12 +41,17 @@ configuration VibServer {
             InstallDir = "$env:programdata\choco"
         }
 
+        #The SQL Installer cannot run under the SYSTEM account so we'll use the administrative Vagrant user for now.
+        $PsDscRunAsCredentialPass = 'vagrant' | ConvertTo-SecureString -AsPlainText -Force
+        $SA_DSCRunAsCred = New-Object System.Management.Automation.PSCredential('vagrant', $PsDscRunAsCredentialPass)
+    
         #install data tier. This will take aw while.
         cChocoPackageInstaller SQLEXPRESS 
         {
-            Name        = "7zip"
+            Name        = "sql-server-express"
             DependsOn   = "[cChocoInstaller]installChoco"
-            Version     = "14.1801.3958.1"
+            Version     = "13.1.4001.0"
+            PsDscRunAsCredential = $SA_DSCRunAsCred  
         }
 
         #the dotnet windowshosting package is required to run ASP.NET Core apps on IIS.
@@ -61,8 +66,8 @@ configuration VibServer {
         #create a database called 'Data' that our app will talk to.
         SqlDatabase CreateDatabase 
         {
-            Servername      = 'localhost'
-            InstanceName    = 'MSSQLSERVER'
+            Servername      = $computerName
+            InstanceName    = 'SQLEXPRESS'
             Name            = 'Data'
             Ensure          = 'Present'
             DependsOn       = '[cChocoPackageInstaller]SQLEXPRESS'
@@ -77,6 +82,18 @@ configuration VibServer {
 
 }
 
+#We have the specifically set this so DSC will let use use a plaintext password in the script.
+
+$configdata = 
+@{
+    AllNodes = @(
+    @{
+        Nodename = 'localhost'
+        PSDscAllowPlainTextPassword = $true
+    }
+    )
+ }
+
 #generate .mof and appy configuration when this script executed by the vagrant shell provisioner
-VibServer 
-Start-DscConfiguration -path ./Vibserver -wait -verbose
+VibServer -ConfigurationData $configdata
+Start-DscConfiguration -path ./Vibserver -wait -verbose -force 
