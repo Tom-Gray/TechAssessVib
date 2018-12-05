@@ -73,7 +73,8 @@ configuration VibServer {
             DependsOn       = '[cChocoPackageInstaller]SQLEXPRESS'
         }
 
-        SqlScriptQuery 'Create_Data'
+        #Create Data in the database for the app to query
+        SqlScriptQuery Create_Data
         {
             ServerInstance       = "$computername\SQLEXPRESS"
 
@@ -94,7 +95,26 @@ configuration VibServer {
 
 
 
+        #Create the AppPool and IIS Site to run the App.
+        xWebAppPool VirbAppPool
+        {
+            Name = "VirbAppPool"
+            Ensure = "Present"
+            State = "started"
+            IdentityType = "SpecificUser"
+            Credential = $SA_DSCRunAsCred
+                        
+        }
 
+        xWebsite AppSite
+        {
+            Name = "VibApp"
+            PhysicalPath = $AppLocation
+            State = "Started"
+            Ensure = "present"
+            ApplicationPool = "VirbAppPool"
+            
+        }
 
 
 
