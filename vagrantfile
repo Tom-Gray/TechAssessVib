@@ -27,6 +27,8 @@ Vagrant.configure("2") do |config|
   #we definte the username\passwords in the vagrantfile so they can be abstracted from the config scripts.
 
   $script = <<-SCRIPT
+
+  #here we create a credential object that we'll pass to the DSC configuration
   $serviceAccountUser = 'vagrant'
   $serviceAccountPass = 'vagrant'
   $PsDscRunAsCredentialPass = $serviceAccountPass | ConvertTo-SecureString -AsPlainText -Force
@@ -34,8 +36,13 @@ Vagrant.configure("2") do |config|
  
  #generate .mof and appy configuration when this script executed by the vagrant shell provisioner
  
+
+ #we 'dotsource' the config and pass in the credential object and config data. Then we create the .mof files containing the server config.
  . C:\\vagrant_data\\Scripts\\Config.ps1
  VibServer -SA_DSCRunAsCred $SA_DSCRunAsCred -ConfigurationData $configdata
+
+
+#here we apply the configuration to the server.
  Set-DscLocalConfigurationManager -path  C:\\vagrant_data\\Scripts\\VibServer -verbose
  Start-DscConfiguration -path ./Vibserver -wait -verbose -force 
   SCRIPT
