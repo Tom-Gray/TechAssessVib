@@ -1,19 +1,11 @@
 
-#install nuget package provider (for Powershell module installation)
-if (!(Get-PackageProvider -name nuget)) {
-    try {
-    Write-Host "Installing NuGet Package Provider"
-    Install-PackageProvider -Name 'NuGet' -Force -Verbose
-    }
 
-    catch {
-        write-error -Message $_
-        throw 10
-    }
+#copy modules into the host rather than download them from the web, which is proving unreliable
+
+try {
+Copy-Item "C:\vagrant_data\Modules" -destination "C:\Program Files\WindowsPowershell" -force -recurse -verbose
 }
 
-
-#DSC will require these modules:
-install-module xWebAdministration -force -RequiredVersion '2.2.0.0'  -verbose  
-install-Module cChoco -force -verbose
-Install-Module SqlServerDsc -force -RequiredVersion '12.1.0.0' -verbose
+catch {
+    throw
+}
