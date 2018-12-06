@@ -89,16 +89,42 @@ configuration VibServer {
 
             #PsDscRunAsCredential = $SA_DSCRunAsCred
         }
-        
-        File DeployApp
-        {
-            SourcePath = "C:\vagrant_data\App\Published\"
-            DestinationPath = $AppLocation
-            Ensure = 'Present'
-            Type = "Directory"
-            Recurse = $true
-            Matchsource = $true
+
+
+        #compiling\publishing the app directly into the image, which feels cleaner
+        #than having the compiled code in source control.
+        #I dont think that Config Management code should do application deployments,
+        #But I have contraints here so this will have to work for now.
+        Script PublishApp {
+            GetScript =  {{Return @{Result=""}}}
+
+            #Check to see if the app config file is already there
+            TestScript = { 
+                if (Test-Path C:\app\web.config) {
+                    return $true
+                }
+                else {
+                    return $false
+                }
+                }
+            #If there is no files present, we enter the SET Script which calls the dotnet publish command.
+            #This makes the assumption that the .NET code is tested and will actually compile!    
+            SetScript = { 
+                try {
+                    dotnet publish C:\vagrant_data\app\VibApp.sln -o C:\app
+                }
+                Catch {
+                    write-error $_ 
+                    Throw
+                }
+            }
+            
+
+
         }
+        
+        
+
 
         #Create the AppPool and IIS Site to run the App.
         xWebAppPool VirbAppPool
