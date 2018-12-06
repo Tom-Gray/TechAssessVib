@@ -19,6 +19,7 @@ configuration VibServer {
         LocalConfigurationManager
         {
              CertificateId = $node.Thumbprint
+             RebootNodeIfNeeded = $false
         }
 
         WindowsFeature Web-Server            { Ensure = 'Present'; Name = 'Web-Server' }
