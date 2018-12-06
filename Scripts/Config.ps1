@@ -2,7 +2,9 @@
 configuration VibServer {
     param(
         $computerName = 'localhost',
-        $AppLocation = "C:\app"
+        $AppLocation = "C:\app",
+        [PsCredential] $SA_DSCRunAsCred
+
     )
     Import-DscResource -ModuleName PSDesiredStateConfiguration
     Import-DscResource -Modulename xWebadministration -moduleversion '2.2.0.0' 
@@ -10,9 +12,14 @@ configuration VibServer {
     Import-DscResource -ModuleName SqlServerDsc -moduleversion '12.1.0.0' 
 
 
-
+ 
 
     Node $computername {
+
+        LocalConfigurationManager
+        {
+             CertificateId = $node.Thumbprint
+        }
 
         WindowsFeature Web-Server            { Ensure = 'Present'; Name = 'Web-Server' }
         WindowsFeature Web-Mgmt-console      { Ensure = 'Present'; Name = 'Web-Mgmt-Console' }
@@ -37,11 +44,11 @@ configuration VibServer {
             InstallDir = "$env:programdata\choco"
         }
 
-        #The SQL Installer cannot run under the SYSTEM account so we'll use the administrative Vagrant user for now.
-        $PsDscRunAsCredentialPass = 'vagrant' | ConvertTo-SecureString -AsPlainText -Force
-        $SA_DSCRunAsCred = New-Object System.Management.Automation.PSCredential('vagrant', $PsDscRunAsCredentialPass)
+
+
     
         #install data tier. This will take aw while.
+        #The SQL Installer cannot run under the SYSTEM account so we'll use the administrative Vagrant user for now.
         cChocoPackageInstaller SQLEXPRESS 
         {
             Name        = "sql-server-express"
@@ -58,6 +65,13 @@ configuration VibServer {
             Version     = "2.1.6"
         }
 
+        cChocoPackageInstaller dotnetcore-sdk 
+        {
+            Name        = "dotnetcore-sdk"
+            DependsOn   = "[cChocoInstaller]installChoco"
+            Version     = " 2.1.500"
+        }
+
 
         #create a database called 'Data' that our app will talk to.
         SqlDatabase CreateDatabase 
@@ -67,6 +81,7 @@ configuration VibServer {
             Name            = 'Data'
             Ensure          = 'Present'
             DependsOn       = '[cChocoPackageInstaller]SQLEXPRESS'
+            PsDscRunAsCredential      = $SA_DSCRunAsCred
         }
 
         #Create Data in the database for the app to query
@@ -87,7 +102,7 @@ configuration VibServer {
                                     use data; insert into dbo.data values (1,'HelloVibrato') "
             QueryTimeout = 120 #slow laptop, long timeout.
 
-            #PsDscRunAsCredential = $SA_DSCRunAsCred
+
         }
 
 
@@ -133,7 +148,7 @@ configuration VibServer {
             Ensure = "Present"
             State = "started"
             IdentityType = "SpecificUser"
-            Credential = $SA_DSCRunAsCred
+            Credential = $SA_DSCRunAsCred #run the app pool as vagrant user so the app has permission to the database
                         
         }
 
@@ -149,7 +164,7 @@ configuration VibServer {
 
         #after the instalaion of the dotnet core hosting runtime, the IIS service needs to be restarted
         #before it will serve an application. 
-        #here is a really hacky way to restart one time, rather than every time this config is applied.
+        #Here is a really hacky way to restart one time, rather than every time this config is applied.
         script RestartIISOneTime {
             TestScript = 
             {
@@ -185,18 +200,20 @@ configuration VibServer {
 
 }
 
-#We have the specifically set this so DSC will let use use a plaintext password in the script.
 
+
+#VibServer -configurationData $configData -SA_DSCRunAsCred $SA_DSCRunAsCred
+#We have the specifically set this so DSC will let use use a plaintext password in the script.
+write-verbose "using cred:  $SA_DSCRunAsCred"
 $configdata = 
 @{
     AllNodes = @(
     @{
         Nodename = 'localhost'
-        PSDscAllowPlainTextPassword = $true
+        Thumbprint = '04CEDBFDADC5838D1F501901F4D33BDA079DC635'
+        CertificateFile = "C:\vagrant_data\DscPublicKey.cer"
             }
     )
  }
 
-#generate .mof and appy configuration when this script executed by the vagrant shell provisioner
-VibServer -ConfigurationData $configdata
-Start-DscConfiguration -path ./Vibserver -wait -verbose -force 
+
