@@ -75,14 +75,16 @@ configuration VibServer {
             ServerInstance       = "$computername\SQLEXPRESS"
 
             GetQuery             = "SELECT Name FROM data.information_schema.tables WHERE table_name = 'data' FOR JSON AUTO"
+            
             TestQuery            = "USE Data;if (select count(TABLE_NAME) from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'data') = 0
-            BEGIN
-                RAISERROR('No Data Found. Creating....', 16, 1)
-            END
-            "
+                                    BEGIN
+                                        RAISERROR('No Data Found. Creating....', 16, 1)
+                                    END"
+            
+           
             SetQuery             = "USE Data create table dbo.data (id int PRIMARY KEY CLUSTERED); alter table dbo.data ADD messages varchar(20) NULL
-            GO
-            use data; insert into dbo.data values (1,'HelloVibrato') "
+                                    GO
+                                    use data; insert into dbo.data values (1,'HelloVibrato') "
             QueryTimeout = 120 #slow laptop, long timeout.
 
             #PsDscRunAsCredential = $SA_DSCRunAsCred
