@@ -121,6 +121,34 @@ configuration VibServer {
             
         }
 
+        #after the instalaion of the dotnet core hosting runtime, the IIS service needs to be restarted
+        #before it will serve an application. 
+        #here is a really hacky way to restart one time, rather than every time this config is applied.
+        script RestartIISOneTime {
+            TestScript = 
+            {
+                if (test-path C:\RestartOnce.txt) {
+                    return $true
+                } 
+                else {
+                    return $false
+                }
+            }
+
+
+            SetScript = 
+            {  
+                cmd /c iisreset
+                "restartFlag" | out-file C:\RestartOnce.txt
+            }    
+            
+            GetScript = 
+            {
+                {Return @{Result=""}}
+            }
+
+            }
+
     
         
 
