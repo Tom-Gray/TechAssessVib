@@ -19,11 +19,7 @@ configuration VibServer {
 
 
         #we'll put our asp.net app here
-        file AppLocation {
-            DestinationPath = $AppLocation
-            Type            = 'Directory'
-            Ensure          = 'Present'
-        }
+
 
         #remove the default site so that it returns a non-200 status code.
         #A theoretical load balancer will not send
@@ -92,8 +88,15 @@ configuration VibServer {
             #PsDscRunAsCredential = $SA_DSCRunAsCred
         }
         
-
-
+        File DeployApp
+        {
+            SourcePath = "C:\vagrant_data\App\Published\"
+            DestinationPath = $AppLocation
+            Ensure = 'Present'
+            Type = "Directory"
+            Recurse = $true
+            Matchsource = $true
+        }
 
         #Create the AppPool and IIS Site to run the App.
         xWebAppPool VirbAppPool
@@ -115,6 +118,9 @@ configuration VibServer {
             ApplicationPool = "VirbAppPool"
             
         }
+
+    
+        
 
 
 
