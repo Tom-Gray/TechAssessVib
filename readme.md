@@ -54,4 +54,4 @@ This took me a bit longer than 4 hours but a lot of that was waiting for Windows
 
 ## Bugs
 
-I've allocated 4Gb of RAM to the VM as I found on occasion it would hard-reboot during the installation of SQL. In the event this happens again, the VM will reboot and finish configuring, however Vagrant will lose track of the log output. It should be fine on any recent hardware.  
+I've allocated 4Gb of RAM to the VM as I found on occasion it would hard-reboot during the installation of SQL. In the event this happens again, the VM will reboot and finish configuring, however Vagrant will lose track of the log output. It should be fine on any recent hardware.  (My laptop is getting a bit long in the tooth)
