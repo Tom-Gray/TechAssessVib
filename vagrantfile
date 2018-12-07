@@ -39,12 +39,12 @@ Vagrant.configure("2") do |config|
 
  #we 'dotsource' the config and pass in the credential object and config data. Then we create the .mof files containing the server config.
  . C:\\vagrant_data\\Scripts\\Config.ps1
- VibServer -SA_DSCRunAsCred $SA_DSCRunAsCred -ConfigurationData $configdata
+ VibServer -SA_DSCRunAsCred $SA_DSCRunAsCred -ConfigurationData $configdata -outPutPath C:\\build\\VibServer
 
 
 #here we apply the configuration to the server.
- Set-DscLocalConfigurationManager -path  C:\\vagrant_data\\Scripts\\VibServer -verbose
- Start-DscConfiguration -path ./Vibserver -wait -verbose -force 
+ Set-DscLocalConfigurationManager -path  C:\\build\\VibServer -verbose
+ Start-DscConfiguration -path C:\\build\\VibServer -wait -verbose -force 
   SCRIPT
 
 
